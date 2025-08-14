@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install buildozer kivy
+          pip install buildozer kivy cython
 
       - name: Build APK
         run: buildozer android debug
