@@ -16,7 +16,7 @@ jobs:
       - name: Build APK in Docker
         uses: addnab/docker-run-action@v3
         with:
-          image: kivy/buildozer:1.4.2
+          image: kivy/buildozer:latest
           options: --user=root
           run: |
             python -m pip install --upgrade pip
