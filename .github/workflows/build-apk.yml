@@ -22,26 +22,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install buildozer kivy cython
 
-      # نصب SDK Tools و Build-Tools و پذیرش لایسنس‌ها
       - name: Install Android SDK and accept licenses
         run: |
           sudo apt-get update
           sudo apt-get install -y unzip openjdk-11-jdk wget
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip -d $HOME/android-sdk
           mkdir -p $HOME/android-sdk/cmdline-tools/latest
-          mv $HOME/android-sdk/cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest/
-          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-33" "build-tools;36.0.0"
-
-      # تنظیم متغیر محیطی ANDROID_HOME
-      - name: Set Android environment
-        run: |
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
-          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          unzip cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools/latest
+          yes | $HOME/android-sdk/cmdline-tools/latest/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-33" "build-tools;36.0.0"
 
       - name: Build APK
-        run: buildozer android debug
+        run: |
+          export ANDROIDSDK=$HOME/android-sdk
+          buildozer android debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
