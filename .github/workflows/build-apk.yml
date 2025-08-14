@@ -10,24 +10,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. دریافت کدها
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      # 2. اجرای Docker container آماده برای Buildozer
-      - name: Build APK using Buildozer Docker
-        uses: addnab/docker-run-action@v3
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v4
         with:
-          image: kivy/buildozer:latest
-          options: --user=root
-          run: |
-            python -m pip install --upgrade pip
-            pip install --upgrade Cython
-            # اطمینان از نصب Kivy و Buildozer
-            pip install buildozer kivy
-            # ساخت APK
-            buildozer android debug
-          
-      # 3. آپلود APK ساخته شده
+          python-version: 3.9
+
+      - name: Upgrade pip and install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade Cython
+          pip install buildozer kivy
+
+      - name: Install required system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-17-jdk zip unzip zlib1g-dev wget
+
+      - name: Setup Android SDK
+        run: |
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip cmdline-tools.zip
+          mv cmdline-tools latest
+          rm cmdline-tools.zip
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+
+      - name: Build APK with Buildozer
+        run: |
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          buildozer android debug
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
