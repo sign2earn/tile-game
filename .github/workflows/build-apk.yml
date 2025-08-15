@@ -13,18 +13,57 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build APK in Docker
-        uses: addnab/docker-run-action@v3
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v4
         with:
-          image: kivy/buildozer:latest
-          options: --user=root
-          run: |
-            python -m pip install --upgrade pip
-            pip install --upgrade Cython
-            pip install buildozer kivy
-            buildozer android debug
+          python-version: '3.9'
+
+      - name: Upgrade pip and install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade cython==0.29.36 buildozer kivy
+
+      - name: Install required system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-17-jdk zip unzip zlib1g-dev wget git python3-pip python3-venv autoconf libtool pkg-config
+
+      - name: Setup Android SDK
+        run: |
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip cmdline-tools.zip
+          mv cmdline-tools latest
+          rm cmdline-tools.zip
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.2:$PATH
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          # بررسی نصب aidl
+          ls -la $ANDROID_HOME/build-tools/33.0.2/aidl
+
+      - name: Setup Android NDK
+        run: |
+          wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip -O ndk.zip
+          unzip ndk.zip -d $HOME
+          rm ndk.zip
+          export ANDROID_NDK_HOME=$HOME/android-ndk-r23b
+          export PATH=$ANDROID_NDK_HOME:$PATH
+
+      - name: Clean Buildozer cache
+        run: |
+          rm -rf .buildozer
+
+      - name: Build APK with Buildozer
+        run: |
+          export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_NDK_HOME=$HOME/android-ndk-r23b
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.2:$ANDROID_NDK_HOME:$PATH
+          buildozer -v android debug
 
       - name: Upload APK artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: TileExplorer-APK
