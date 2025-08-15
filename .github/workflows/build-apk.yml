@@ -71,8 +71,11 @@ jobs:
 
       - name: Check source files
         run: |
-          if [ ! -f "$(grep '^source.dir' buildozer.spec | cut -d'=' -f2 | tr -d ' ')/main.py" ]; then
-            echo "Error: main.py not found in source.dir"
+          SOURCE_DIR=$(grep '^source.dir' buildozer.spec | cut -d'=' -f2 | tr -d ' ')
+          SOURCE_MAIN=$(grep '^source.main' buildozer.spec | cut -d'=' -f2 | tr -d ' ' || echo "main.py")
+          if [ ! -f "$SOURCE_DIR/$SOURCE_MAIN" ]; then
+            echo "Error: $SOURCE_MAIN not found in $SOURCE_DIR"
+            ls -l $SOURCE_DIR
             exit 1
           fi
 
