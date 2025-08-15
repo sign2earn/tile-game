@@ -8,6 +8,12 @@ package.name = tileexplorer
 # (str) دامنه بسته
 package.domain = org.tileexplorer
 
+# (str) مسیر پوشه منبع (اضافه شده برای رفع خطا)
+source.dir = .
+
+# (str) نسخه برنامه (اضافه شده برای رفع خطا)
+version = 1.0
+
 # (list) فایل‌های منبع برای شامل شدن
 source.include_exts = py,png,jpg,kv,atlas
 
