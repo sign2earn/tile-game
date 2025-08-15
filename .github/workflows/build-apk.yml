@@ -13,21 +13,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.9
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
-
-      - name: Upgrade pip and install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade cython==0.29.36 buildozer==1.5.0 kivy==2.3.0
-
-      - name: Install required system packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-17-jdk zip unzip zlib1g-dev wget git python3-pip python3-venv autoconf libtool pkg-config
-
       - name: Fix BOM and CRLF in buildozer.spec
         run: |
           if [ -f buildozer.spec ]; then
@@ -39,38 +24,6 @@ jobs:
             echo "Error: buildozer.spec not found"
             exit 1
           fi
-
-      - name: Setup Android SDK
-        run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip -d .
-          mv cmdline-tools latest
-          rm cmdline-tools.zip
-          export ANDROID_HOME=$HOME/android-sdk
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.0:$PATH
-          # پذیرش مجوزهای SDK
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          # نصب ابزارهای لازم
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
-          # بررسی نصب sdkmanager و aidl
-          ls -la $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager || { echo "sdkmanager not found"; exit 1; }
-          ls -la $ANDROID_HOME/build-tools/33.0.0/aidl || { echo "aidl not found"; exit 1; }
-
-      - name: Setup Android NDK
-        run: |
-          wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
-          unzip ndk.zip -d $HOME
-          rm ndk.zip
-          export ANDROID_NDK_HOME=$HOME/android-ndk-r25b
-          export PATH=$ANDROID_NDK_HOME:$PATH
-
-      - name: Clean Buildozer cache
-        run: |
-          rm -rf $HOME/.buildozer
-          rm -rf .buildozer
 
       - name: Check source files
         run: |
@@ -84,13 +37,12 @@ jobs:
             echo "Found $SOURCE_MAIN in $SOURCE_DIR"
           fi
 
-      - name: Build APK with Buildozer
+      - name: Build APK with Buildozer in Docker
         run: |
-          export ANDROID_HOME=$HOME/android-sdk
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          export ANDROID_NDK_HOME=$HOME/android-ndk-r25b
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.0:$ANDROID_NDK_HOME:$PATH
-          buildozer -v android debug
+          docker run \
+            -v $(pwd):/home/user/hostcwd \
+            kivy/buildozer:latest \
+            bash -c "cd /home/user/hostcwd && buildozer -v android debug"
 
       - name: Upload APK artifact
         if: success()
