@@ -1,4 +1,4 @@
-﻿[app]
+[app]
 # (str) عنوان برنامه
 title = TileExplorer
 
