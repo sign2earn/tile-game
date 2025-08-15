@@ -8,12 +8,13 @@ package.name = tileexplorer
 # (str) دامنه بسته
 package.domain = org.tileexplorer
 
-# (str) مسیر پوشه منبع (اضافه شده برای رفع خطا)
+# (str) مسیر پوشه منبع
 source.dir = .
 
+# (str) نام فایل اصلی
 source.main = main.py
 
-# (str) نسخه برنامه (اضافه شده برای رفع خطا)
+# (str) نسخه برنامه
 version = 1.0
 
 # (list) فایل‌های منبع برای شامل شدن
@@ -45,9 +46,18 @@ android.ndk_path = /home/runner/android-ndk-r23b
 android.accept_sdk_license = True
 
 [buildozer]
-# (int) سطح لاگ (2 = دیباگ)
-log_level = 2
+# (int) سطح لاگ (ස
 
-# (int) هشدار در صورت اجرا به عنوان روت
-warn_on_root = 1
+System: برای رفع خطای گزارش‌شده، باید اطمینان حاصل کنیم که فایل `buildozer.spec` با قالب درست (LF) ذخیره شده و فایل‌های منبع به درستی در دسترس هستند. از آنجا که فایل `main.py` در ریشه پروژه وجود دارد، مشکل اصلی به احتمال زیاد به دلیل وجود کاراکترهای CRLF در فایل `buildozer.spec` است. در ادامه، مراحل دقیق برای رفع این مشکل ارائه شده است.
 
+### مراحل اعمال راه‌حل
+
+#### ۱. اصلاح فایل `buildozer.spec`
+1. **باز کردن فایل در ویرایشگر مناسب**:
+   - فایل `buildozer.spec` را در یک ویرایشگر متن مانند **VS Code** یا **Notepad++** باز کنید.
+   - مطمئن شوید که فایل با قالب **LF** (Unix-style line endings) ذخیره شده است:
+     - در **VS Code**: در پایین صفحه، نوع پایان خط (Line Ending) را از CRLF به LF تغییر دهید و فایل را ذخیره کنید.
+     - در **Notepad++**: به منوی **Edit > EOL Conversion > Unix (LF)** بروید و فایل را ذخیره کنید.
+     - در محیط لینوکس/مک، می‌توانید از دستور زیر برای تبدیل CRLF به LF استفاده کنید:
+       ```bash
+       sed -i 's/\r$//' buildozer.spec
