@@ -33,7 +33,7 @@ presplash.filename =
 icon.filename =
 
 # (list) نیازمندی‌های برنامه
-requirements = python3,kivy
+requirements = python3,kivy==2.3.0
 
 # تنظیمات خاص اندروید
 # (int) API هدف اندروید
