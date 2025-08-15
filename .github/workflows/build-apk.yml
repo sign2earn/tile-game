@@ -11,17 +11,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python 3.9
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
       - name: Upgrade pip and install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --upgrade cython==0.29.36 buildozer kivy
+          pip install --upgrade cython==0.29.36 buildozer==1.5.0 kivy==2.3.0
 
       - name: Install required system packages
         run: |
@@ -44,7 +44,7 @@ jobs:
         run: |
           mkdir -p $HOME/android-sdk/cmdline-tools
           cd $HOME/android-sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O cmdline-tools.zip
           unzip cmdline-tools.zip -d .
           mv cmdline-tools latest
           rm cmdline-tools.zip
@@ -56,8 +56,8 @@ jobs:
           # نصب ابزارهای لازم
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
           # بررسی نصب sdkmanager و aidl
-          ls -la $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-          ls -la $ANDROID_HOME/build-tools/33.0.0/aidl
+          ls -la $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager || { echo "sdkmanager not found"; exit 1; }
+          ls -la $ANDROID_HOME/build-tools/33.0.0/aidl || { echo "aidl not found"; exit 1; }
 
       - name: Setup Android NDK
         run: |
@@ -69,6 +69,7 @@ jobs:
 
       - name: Clean Buildozer cache
         run: |
+          rm -rf $HOME/.buildozer
           rm -rf .buildozer
 
       - name: Check source files
