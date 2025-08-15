@@ -11,6 +11,8 @@ package.domain = org.tileexplorer
 # (str) مسیر پوشه منبع (اضافه شده برای رفع خطا)
 source.dir = .
 
+source.main = main.py
+
 # (str) نسخه برنامه (اضافه شده برای رفع خطا)
 version = 1.0
 
@@ -48,3 +50,4 @@ log_level = 2
 
 # (int) هشدار در صورت اجرا به عنوان روت
 warn_on_root = 1
+
