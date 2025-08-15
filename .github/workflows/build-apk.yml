@@ -28,6 +28,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y openjdk-17-jdk zip unzip zlib1g-dev wget git python3-pip python3-venv autoconf libtool pkg-config
 
+      - name: Fix BOM in buildozer.spec
+        run: |
+          if [ -f buildozer.spec ]; then
+            sed -i '1s/^\xEF\xBB\xBF//' buildozer.spec
+            head -n 5 buildozer.spec  # نمایش ۵ خط اول برای بررسی
+          else
+            echo "Error: buildozer.spec not found"
+            exit 1
+          fi
+
       - name: Setup Android SDK
         run: |
           mkdir -p $HOME/android-sdk/cmdline-tools
@@ -37,10 +47,14 @@ jobs:
           mv cmdline-tools latest
           rm cmdline-tools.zip
           export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.2:$PATH
+          # پذیرش مجوزهای SDK
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          # نصب ابزارهای لازم
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-          # بررسی نصب aidl
+          # بررسی نصب sdkmanager و aidl
+          ls -la $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
           ls -la $ANDROID_HOME/build-tools/33.0.2/aidl
 
       - name: Setup Android NDK
@@ -55,9 +69,17 @@ jobs:
         run: |
           rm -rf .buildozer
 
+      - name: Check source files
+        run: |
+          if [ ! -f "$(grep '^source.dir' buildozer.spec | cut -d'=' -f2 | tr -d ' ')/main.py" ]; then
+            echo "Error: main.py not found in source.dir"
+            exit 1
+          fi
+
       - name: Build APK with Buildozer
         run: |
           export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
           export ANDROID_NDK_HOME=$HOME/android-ndk-r23b
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.2:$ANDROID_NDK_HOME:$PATH
           buildozer -v android debug
