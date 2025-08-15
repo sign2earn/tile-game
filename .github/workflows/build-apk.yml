@@ -16,10 +16,9 @@ jobs:
       - name: Fix BOM and CRLF in buildozer.spec
         run: |
           if [ -f buildozer.spec ]; then
-            # حذف BOM و CRLF
             sed -i '1s/^\xEF\xBB\xBF//' buildozer.spec
             sed -i 's/\r$//' buildozer.spec
-            head -n 5 buildozer.spec  # نمایش ۵ خط اول برای بررسی
+            head -n 5 buildozer.spec
           else
             echo "Error: buildozer.spec not found"
             exit 1
@@ -38,11 +37,11 @@ jobs:
           fi
 
       - name: Build APK with Buildozer in Docker
-        run: |
-          docker run \
-            -v $(pwd):/home/user/hostcwd \
-            kivy/buildozer:latest \
-            bash -c "cd /home/user/hostcwd && buildozer -v android debug"
+        uses: docker/run@v2
+        with:
+          image: kivy/buildozer:stable
+          args: bash -c "cd /github/workspace && pip install git+https://github.com/kivy/buildozer.git@master && buildozer -v android debug"
+          volumes: ${{ github.workspace }}:/github/workspace
 
       - name: Upload APK artifact
         if: success()
