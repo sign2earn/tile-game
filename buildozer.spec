@@ -42,14 +42,8 @@ android.api = 33
 # (int) حداقل API
 android.minapi = 21
 
-# (str) نسخه NDK اندروید
+# (str) نسخه NDK اندروید (اختیاری، چون Docker از NDK داخلی استفاده می‌کند)
 android.ndk = 25b
-
-# (str) مسیر SDK اندروید
-android.sdk_path = /home/runner/android-sdk
-
-# (str) مسیر NDK اندروید
-android.ndk_path = /home/runner/android-ndk-r25b
 
 # (bool) پذیرش خودکار مجوزهای SDK
 android.accept_sdk_license = True
